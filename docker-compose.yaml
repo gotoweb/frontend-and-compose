@@ -1,0 +1,31 @@
+services:
+  frontend:
+    build: frontend
+    ports:
+      - 3000:80
+  backend:
+    image: django-tutorial:latest
+    ports:
+      - 8080:80
+    environment:
+      - ACTIVE_DB=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=supersecret
+      - DB_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=supersecret
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 3
